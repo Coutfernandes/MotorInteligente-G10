@@ -58,7 +58,7 @@ else:
 
 with st.sidebar:
     st.header("Menu")
-    st.page_link("main.py", label="Dashboard principal")
+    st.markdown("**Dashboard Principal**")
     st.write("Projeto: CommunityLab")
     st.write("Status: em desenvolvimento")
 
