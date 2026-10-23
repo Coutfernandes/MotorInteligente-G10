@@ -63,22 +63,33 @@ Dashboard / aprovação
 
 ## ▶️ Como rodar
 
+> A parte de execução do projeto está pronta para a estrutura Python/Streamlit, mas o app principal ainda precisa existir em `src/app/main.py` para o comando abaixo funcionar.
+
 ```bash
 git clone https://github.com/Coutfernandes/MotorInteligente-G10.git
 cd MotorInteligente-G10
 python -m venv .venv
 
-# Windows
-.venv\Scripts\activate
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+
+# Windows (cmd)
+.venv\Scripts\activate.bat
 
 pip install -r requirements.txt
+
+# Linux/macOS
 cp .env.example .env
 
+# Windows (PowerShell)
+Copy-Item .env.example .env
+
 # Preencha o .env com suas chaves
+# Quando a interface estiver pronta:
 streamlit run src/app/main.py
 ```
 
-> Ajuste as variáveis de ambiente conforme o seu projeto antes de iniciar a aplicação.
+> Ajuste as variáveis de ambiente conforme o seu projeto antes de iniciar a aplicação. O arquivo `.env.example` já contém as chaves principais esperadas pelo projeto.
 
 ---
 
