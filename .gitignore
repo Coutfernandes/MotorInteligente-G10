@@ -1,0 +1,16 @@
+@"
+.venv/
+venv/
+.env
+*.pem
+.oci/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.idea/
+.vscode/
+.DS_Store
+*.log
+.streamlit/secrets.toml
+"@ | Set-Content -Path .gitignore -Encoding UTF8
