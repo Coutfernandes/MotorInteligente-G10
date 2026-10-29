@@ -1,0 +1,62 @@
+[
+  {
+    "interaction_id": "INT-001",
+    "author_id": "a_b23851234670",
+    "channel": "conquistas-e-vagas",
+    "interaction_type": "depoimento",
+    "created_at": "2026-10-13T12:12:00Z",
+    "text": "Pessoal, fui aprovada para minha primeira vaga como Desenvolvedora Júnior de IA! O projeto com LangChain e OCI que coloquei no portfólio foi muito importante na entrevista técnica. Sou muito grata pelo apoio da comunidade.",
+    "text_truncated": false,
+    "pii_redacted": false,
+    "reactions": 42,
+    "consent_marketing": true
+  },
+  {
+    "interaction_id": "INT-002",
+    "author_id": "a_f94d5c1daf70",
+    "channel": "duvidas-langgraph",
+    "interaction_type": "pergunta_tecnica",
+    "created_at": "2026-10-13T13:35:00Z",
+    "text": "Estou com dúvida sobre como estruturar nós condicionais no LangGraph quando a resposta do modelo precisa de retry. Alguém tem um exemplo prático de router?",
+    "text_truncated": false,
+    "pii_redacted": false,
+    "reactions": 8,
+    "consent_marketing": false
+  },
+  {
+    "interaction_id": "INT-004",
+    "author_id": "a_f4dc460fa24b",
+    "channel": "debates-ia",
+    "interaction_type": "debate",
+    "created_at": "2026-10-13T17:20:00Z",
+    "text": "Na minha opinião, agentes autônomos só deveriam executar ações críticas depois de uma etapa explícita de aprovação humana. A automação precisa ser acompanhada de controle.",
+    "text_truncated": false,
+    "pii_redacted": false,
+    "reactions": 19,
+    "consent_marketing": true
+  },
+  {
+    "interaction_id": "INT-009",
+    "author_id": "a_6822e1ad4cf2",
+    "channel": "apoio-e-estudos",
+    "interaction_type": "feedback_negativo",
+    "created_at": "2026-10-14T18:48:00Z",
+    "text": "Estou tendo dificuldade para acompanhar o ritmo das aulas e fiquei perdida na parte de configuração do ambiente. Talvez um guia de primeiros passos mais detalhado ajudasse.",
+    "text_truncated": false,
+    "pii_redacted": false,
+    "reactions": 14,
+    "consent_marketing": false
+  },
+  {
+    "interaction_id": "INT-021",
+    "author_id": "a_bc89b893d305",
+    "channel": "off-topic",
+    "interaction_type": "mensagem_operacional",
+    "created_at": "2026-10-17T16:50:00Z",
+    "text": "Alguém sabe se a gravação do encontro de ontem já foi disponibilizada?",
+    "text_truncated": false,
+    "pii_redacted": false,
+    "reactions": 3,
+    "consent_marketing": false
+  }
+]
