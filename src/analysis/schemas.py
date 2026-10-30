@@ -1,4 +1,4 @@
-"""Modelos de dados da análise de sentimento e tópicos (F04)."""
+"""Modelos de dados da análise de sentimento e tópicos (F04), do roteador e da agregação."""
 
 import re
 import unicodedata
@@ -53,3 +53,27 @@ class AnaliseInteracao(RespostaLLM):
 
     interaction_id: str = Field(min_length=1)
     tipo: str = Field(min_length=1)
+
+
+class Rota(str, Enum):
+    CASE = "case"
+    LINKEDIN = "linkedin"
+    FAQ = "faq"
+    IGNORAR = "ignorar"
+
+
+class MensagemRoteada(AnaliseInteracao):
+    """Análise da mensagem + o tipo de conteúdo que ela vai virar."""
+
+    consent_marketing: bool
+    rota: Rota
+    motivo: str = Field(min_length=1)
+
+
+class ResumoComunidade(BaseModel):
+    """Resumo do lote inteiro (resumo_comunidade)."""
+
+    total_interacoes_processadas: int = Field(ge=0)
+    sentimento_predominante: Sentimento | None
+    topicos_principais: list[str]
+    contagem_por_rota: dict[Rota, int]
