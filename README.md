@@ -1,152 +1,197 @@
 # CommunityLab
 
-<div align="center">
-  <img src="https://img.shields.io/badge/Project-CommunityLab-1F6FEB?style=for-the-badge&logo=github" alt="CommunityLab" />
-  <h3>Gerador automático de conteúdo a partir da comunidade</h3>
-  <p><strong>Hackathon ONE G10</strong> — Grupo 10 | Oracle Next Education & Alura</p>
-</div>
+Motor inteligente de transformação e distribuição de conteúdo para comunidades digitais.
 
-## 🚀 Visão geral
+Projeto desenvolvido para o Hackathon ONE G10, por equipes da Oracle Next Education e Alura.
 
-O CommunityLab tem como objetivo transformar debates, interações e conquistas de comunidades digitais em conteúdos estruturados para LinkedIn, X (Twitter) e newsletters.
+## Visão geral
 
-O fluxo planejado recebe dados da comunidade, identifica temas e sentimentos com IA, gera sugestões de conteúdo e permite que a equipe revise os materiais antes de utilizá-los.
+O CommunityLab transforma interações e conquistas de comunidades digitais em conteúdo estratégico para canais como LinkedIn, X (Twitter) e newsletters.
 
-> **Estado atual:** o projeto tem a estrutura inicial e uma tela Streamlit de demonstração. A leitura e análise reais dos arquivos, a geração de conteúdo com Gemini e o armazenamento no OCI ainda serão desenvolvidos.
+O projeto recebe dados em JSON ou CSV, processa temas e sentimentos, gera ativos de comunicação e apresenta os resultados para curadoria humana antes da aprovação.
 
-### Objetivo do produto
+### Funcionalidades planejadas
 
-1. Receber debates e interações da comunidade em JSON ou CSV
-2. Identificar temas, sentimento, aprendizados e conquistas
-3. Gerar rascunhos adaptados para LinkedIn, X e newsletters
-4. Permitir revisão humana dos conteúdos
-5. Exportar ou armazenar os materiais aprovados
+- Leitura e validação de arquivos JSON e CSV.
+- Análise de sentimentos e extração de temas.
+- Geração de posts, newsletters e FAQs.
+- Curadoria, edição e aprovação dos materiais gerados.
+- Persistência dos ativos aprovados no OCI Object Storage.
+- Execução de testes unitários e de integração.
 
-## 🧠 Stack tecnológica
+## Como funciona
 
-As dependências estão declaradas em `requirements.txt`. A presença de uma biblioteca na lista não significa que a integração correspondente já esteja implementada.
+```mermaid
+flowchart LR
+    A["Dados da comunidade\nJSON ou CSV"] --> B["Ingestão e validação"]
+    B --> C["Análise de conteúdo\nPython e Google Gemini"]
+    C --> D["Geração de ativos\nPosts, newsletters e FAQs"]
+    D --> E["Curadoria humana"]
+    E --> F["OCI Object Storage"]
+```
 
-| Tecnologia | Uso previsto |
+O fluxo completo é organizado em três camadas principais:
+
+1. **Apresentação:** interface Streamlit para entrada de dados e curadoria.
+2. **Serviços:** processamento, análise, geração de conteúdo e orquestração.
+3. **Persistência:** armazenamento dos ativos aprovados no OCI Object Storage.
+
+Consulte a [documentação de arquitetura](docs/arquitetura.md) para conhecer o fluxo detalhado.
+
+## Stack tecnológica
+
+| Tecnologia | Finalidade |
 | --- | --- |
-| Python | Linguagem principal |
-| Streamlit | Interface web e demonstração atual |
-| LangChain | Integração e composição de chamadas a modelos de linguagem |
-| LangGraph | Orquestração do fluxo de processamento |
-| Google Gemini (`langchain-google-genai`) | Análise e geração de conteúdo |
-| OCI SDK (`oci`) | Integração planejada com OCI Object Storage |
-| python-dotenv | Leitura de configurações locais do arquivo `.env` |
-| Pydantic | Validação e modelagem dos dados |
-| pandas | Manipulação de dados tabulares |
+| Python | Linguagem principal do projeto |
+| Streamlit | Interface web |
+| LangChain | Composição das integrações de IA |
+| LangGraph | Orquestração do pipeline |
+| Google Gemini | Análise e geração de conteúdo |
+| OCI Object Storage | Persistência dos ativos aprovados |
+| pandas | Manipulação de dados estruturados |
+| Pydantic | Validação dos modelos de dados |
 | pytest | Testes automatizados |
-| GitHub e Trello | Versionamento, revisão de código e organização do trabalho |
+| Git e GitHub | Controle de versão e colaboração |
+| Trello | Organização das tarefas |
 
-Para detalhes de arquitetura, variáveis de ambiente e status de implementação, consulte a [documentação técnica](docs/ARQUITETURA_E_STACK.md).
+## Estado atual da implementação
 
-## ▶️ Como rodar
+Este repositório possui uma base funcional para análise de sentimentos e contém uma interface Streamlit inicial.
 
-### Windows — PowerShell
+| Componente | Estado |
+| --- | --- |
+| Interface Streamlit | Implementada parcialmente |
+| Upload de JSON/CSV | Disponível na interface |
+| Análise de sentimentos | Implementada em módulos Python |
+| Testes automatizados | Disponíveis |
+| Integração com Google Gemini | Em desenvolvimento |
+| Orquestração completa do pipeline | Em desenvolvimento |
+| Geração de conteúdos | Em desenvolvimento |
+| Integração com OCI Object Storage | Em desenvolvimento |
+
+Para informações detalhadas, consulte a [documentação técnica e de stack](docs/ARQUITETURA_E_STACK.md).
+
+## Pré-requisitos
+
+- Python 3.10 ou superior.
+- Git.
+- Chave de API do Google Gemini, quando a integração estiver em uso.
+- Credenciais OCI, quando o armazenamento estiver configurado.
+
+## Instalação
+
+### Windows
 
 ```powershell
 git clone https://github.com/Coutfernandes/MotorInteligente-G10.git
 cd MotorInteligente-G10
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
 Copy-Item .env.example .env
-streamlit run src/app/main.py
 ```
 
-Se o PowerShell bloquear a ativação do ambiente, use o Prompt de Comando:
-
-```bat
-.venv\Scripts\activate.bat
-```
-
-### Linux/macOS
+### Linux ou macOS
 
 ```bash
 git clone https://github.com/Coutfernandes/MotorInteligente-G10.git
 cd MotorInteligente-G10
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 cp .env.example .env
+```
+
+## Configuração
+
+Edite o arquivo `.env` criado a partir de `.env.example`.
+
+```dotenv
+GOOGLE_API_KEY=sua_chave_do_gemini
+LLM_PROVIDER=gemini
+LLM_MODEL=gemini-1.5-flash
+```
+
+Não versionar credenciais, chaves privadas ou arquivos `.env`.
+
+## Execução
+
+Inicie a aplicação Streamlit:
+
+```bash
 streamlit run src/app/main.py
 ```
 
-A tela atual pode ser executada sem credenciais. As integrações com Gemini e OCI ainda serão implementadas. Nunca envie o arquivo `.env` ao Git.
+Em seguida, acesse o endereço informado pelo terminal, normalmente `http://localhost:8501`.
 
-## 📁 Estrutura do projeto
+A tela atual pode ser executada sem credenciais. O uso completo das integrações de IA e OCI depende das respectivas configurações.
+
+## Testes
+
+Execute os testes automatizados com:
+
+```bash
+pytest
+```
+
+## Estrutura do projeto
 
 ```text
 .
-├── .env.example
-├── .gitignore
-├── README.md
-├── requirements.txt
 ├── src/
-│   ├── analysis/       # Módulo planejado para análise com IA
-│   ├── app/            # Aplicação Streamlit inicial
-│   ├── generation/     # Módulo planejado para geração de conteúdo
-│   ├── ingestion/      # Módulo planejado para entrada de dados
-│   ├── orchestration/  # Módulo planejado para o pipeline
-│   └── storage/        # Módulo planejado para OCI
-├── tests/              # Testes em desenvolvimento
-└── docs/               # Documentação técnica
+│   ├── analysis/       # Análise de sentimentos, schemas e integração com IA
+│   ├── app/            # Interface Streamlit
+│   ├── generation/     # Geração de conteúdos
+│   ├── ingestion/      # Ingestão de dados
+│   ├── orchestration/  # Coordenação do fluxo de processamento
+│   └── storage/        # Integração com OCI Object Storage
+├── data/               # Dados de exemplo
+├── tests/              # Testes automatizados
+├── docs/               # Documentação técnica
+├── .env.example
+├── requirements.txt
+└── README.md
 ```
 
-As pastas dos módulos de backend ainda são estrutura inicial; veja o estado detalhado na [documentação técnica](docs/ARQUITETURA_E_STACK.md).
+## Fluxo de contribuição
 
-## 🌿 Fluxo de trabalho (GitHub)
+O projeto utiliza Gitflow.
 
-O Trello é usado para organizar as tarefas; o GitHub é usado para versionar o código e revisar as alterações.
+- `main`: versão estável.
+- `develop`: integração das funcionalidades.
+- `feature/nome-da-tarefa`: desenvolvimento de uma tarefa específica.
 
-- `main`: versão estável; não desenvolver diretamente nesta branch
-- `develop`: branch de integração da equipe
-- `feature/Fxx-nome-da-tarefa`: branch isolada para uma tarefa do Trello
-
-### Para começar uma tarefa
-
-Clone o repositório uma vez:
-
-```bash
-git clone https://github.com/Coutfernandes/MotorInteligente-G10.git
-cd MotorInteligente-G10
-```
-
-Antes de cada tarefa, atualize `develop` e crie sua branch:
+### Iniciar uma tarefa
 
 ```bash
 git checkout develop
 git pull origin develop
-git checkout -b feature/Fxx-nome-da-tarefa
+git checkout -b feature/nome-da-tarefa
 ```
 
-### Ao concluir a tarefa
-
-Revise os arquivos alterados e faça um commit claro:
+### Enviar alterações
 
 ```bash
-git status
-git add caminho/do/arquivo
-git commit -m "feat: descreve a mudança"
-git push -u origin feature/Fxx-nome-da-tarefa
+git add .
+git commit -m "feat: descreve a alteração"
+git push -u origin feature/nome-da-tarefa
 ```
 
-Abra um Pull Request com destino `develop`, descreva o que mudou e como testou. Aguarde a revisão e aprovação antes do merge.
+Abra um Pull Request para a branch `develop`, descreva o que foi alterado e informe os testes executados.
 
-> Não faça commits diretamente em `main` ou `develop`. Nunca envie `.env`, chaves de API, arquivos `.pem`, tokens ou credenciais ao repositório. A integração em `main` é feita quando a equipe validar uma versão estável.
+Não faça commits diretamente em `main` ou `develop`.
 
-## 👥 Equipe — Grupo 10
+## Equipe — Grupo 10
 
-| Papel | Responsabilidade |
-| --- | --- |
-| Tech Lead / Arquitetura | Gitflow, arquitetura, revisão de PRs, OCI e diagrama |
-| Backend — LLM & Prompts | Análise de sentimento, tópicos e geração de conteúdo |
-| Backend — Pipeline & Dados | Ingestão, validação, datasets e tratamento de erros |
-| Frontend Streamlit | Upload, visualização, curadoria e download |
-| Product / Docs & Demo | Documentação, qualidade, organização do Trello e demonstração |
+| Integrante | Responsabilidade | Atuação |
+| --- | --- | --- |
+| Matheus Coutinho | Tech Lead / Arquitetura | Gitflow, OCI Object Storage, arquitetura e revisão de PRs |
+| Matheus Antero | Backend — IA e prompts | Análise de sentimentos, prompts e geração de conteúdo |
+| Nathalia Marques | Backend — Dados e pipeline | Ingestão, validação, tratamento de erros e datasets |
+| Nicolas Firmino | Frontend Streamlit | Interface, visualização, curadoria e aprovação |
+| Rafael Victor | Produto, documentação e demonstração | Organização, documentação, testes e apresentação |
 
-## 📌 Escopo e documentação
+## Documentação relacionada
 
-Este projeto está em desenvolvimento como parte do Hackathon ONE G10. As funcionalidades descritas como futuras representam o objetivo do produto, não necessariamente recursos já implementados. O Trello contém as descrições e os critérios de aceite das tarefas.
+- [Arquitetura do sistema](docs/arquitetura.md)
+- [Stack técnica e estado da implementação](docs/ARQUITETURA_E_STACK.md)
