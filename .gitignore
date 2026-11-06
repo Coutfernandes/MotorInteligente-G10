@@ -11,4 +11,10 @@ __pycache__/
 .vscode/
 .DS_Store
 *.log
-.streamlit/secrets.toml
+
+# Pacotes gerados localmente pelo pipeline
+data/saida/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
