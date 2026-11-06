@@ -12,22 +12,24 @@ Essa separação permite que a equipe desenvolva, teste e mantenha as interfaces
 
 ```mermaid
 flowchart TD
-    A["Dados de entrada: JSON / CSV"] -->|"Ingestão e validação"| B["Camada de apresentação: Streamlit Web App"]
-    B -->|"Orquestração de prompts"| C["Camada de serviço: Python + LangChain + Google Gemini"]
-    C -->|"Geração de ativos: posts e FAQs"| D["Curadoria humana e aprovação"]
-    D -->|"Persistência final"| E["Camada de persistência: OCI Object Storage Always Free"]
+    A["Dados de entrada: JSON / CSV"] -->|"Upload"| B["Camada de apresentação: React SPA"]
+    B -->|"HTTP /api"| F["API FastAPI"]
+    F -->|"Ingestão e validação"| C["Camada de serviço: Python + LangGraph + LangChain + Google Gemini"]
+    C -->|"Pacote gerado"| E["Camada de persistência: OCI Object Storage Always Free"]
+    C -->|"Ativos pendentes: posts, newsletter e FAQ"| D["Curadoria humana e aprovação"]
+    D -->|"Somente aprovados"| E
 ```
 
 ## Camadas da aplicação
 
 ### Camada de apresentação
 
-Responsável pela interação com os usuários. A aplicação web construída com Streamlit permite enviar os dados de entrada, acompanhar o processamento, visualizar os ativos gerados e realizar a curadoria dos resultados.
+Responsável pela interação com os usuários. A aplicação web em React (pasta `frontend/`) tem quatro visões: Visão Geral, Ingestão, Curadoria e Exportação. Ela conversa com o backend apenas pela API FastAPI (`backend/src/api`), sem regra de negócio própria.
 
 Tecnologias principais:
 
-- Streamlit
-- Interface web para usuários
+- React + TypeScript + Vite
+- FastAPI (ponte HTTP com a camada de serviço)
 
 ### Camada de serviço
 
@@ -41,7 +43,7 @@ Tecnologias principais:
 
 ### Camada de persistência
 
-Armazena os ativos que passaram pela curadoria humana e receberam aprovação. O armazenamento final utiliza OCI Object Storage, no plano Always Free.
+Armazena o pacote gerado pelo pipeline (`pacotes/<id>.json`, RN03) e, após a curadoria, o pacote somente com os ativos aprovados (`aprovados/<id>.json`, RN04). O armazenamento utiliza OCI Object Storage, no plano Always Free, com uma cópia local em `data/saida/` usada pela curadoria.
 
 ## Fluxo de dados
 
@@ -74,4 +76,4 @@ Armazena os ativos que passaram pela curadoria humana e receberam aprovação. O
 
 ## Estado da implementação
 
-Esta arquitetura representa o desenho planejado da aplicação. Tecnologias de IA e persistência podem permanecer declaradas ou em desenvolvimento até que suas integrações estejam implementadas. Para o estado detalhado da implementação e da infraestrutura, consulte a [Documentação técnica — CommunityLab](ARQUITETURA_E_STACK.md).
+Todas as camadas descritas aqui estão implementadas. Para o estado detalhado da implementação e da infraestrutura, consulte a [Documentação técnica — CommunityLab](ARQUITETURA_E_STACK.md).

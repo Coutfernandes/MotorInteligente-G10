@@ -32,7 +32,7 @@ flowchart LR
 
 O fluxo completo é organizado em três camadas principais:
 
-1. **Apresentação:** interface Streamlit para entrada de dados e curadoria.
+1. **Apresentação:** interface React (Visão Geral, Ingestão, Curadoria e Exportação), ligada ao backend por uma API FastAPI.
 2. **Serviços:** processamento, análise, geração de conteúdo e orquestração.
 3. **Persistência:** armazenamento dos ativos aprovados no OCI Object Storage.
 
@@ -43,7 +43,8 @@ Consulte a [documentação de arquitetura](docs/arquitetura.md) para conhecer o 
 | Tecnologia | Finalidade |
 | --- | --- |
 | Python | Linguagem principal do projeto |
-| Streamlit | Interface web |
+| React + Vite | Interface web |
+| FastAPI | API entre a interface e o pipeline |
 | LangChain | Composição das integrações de IA |
 | LangGraph | Orquestração do pipeline |
 | Google Gemini | Análise e geração de conteúdo |
@@ -56,24 +57,23 @@ Consulte a [documentação de arquitetura](docs/arquitetura.md) para conhecer o 
 
 ## Estado atual da implementação
 
-Este repositório possui uma base funcional para análise de sentimentos e contém uma interface Streamlit inicial.
-
 | Componente | Estado |
 | --- | --- |
-| Interface Streamlit | Implementada parcialmente |
-| Upload de JSON/CSV | Disponível na interface |
-| Análise de sentimentos | Implementada em módulos Python |
-| Testes automatizados | Disponíveis |
-| Integração com Google Gemini | Em desenvolvimento |
-| Orquestração completa do pipeline | Em desenvolvimento |
-| Geração de conteúdos | Em desenvolvimento |
-| Integração com OCI Object Storage | Em desenvolvimento |
+| Ingestão e validação de JSON/CSV | Implementada e testada |
+| Análise de sentimento e tópicos (Gemini) | Implementada e testada |
+| Roteamento RN01/RN02 | Implementado e testado |
+| Geração de post LinkedIn, newsletter e FAQ | Implementada e testada |
+| Pipeline LangGraph | Implementado e testado |
+| OCI Object Storage | Implementado; depende das credenciais no `.env` |
+| Curadoria e exportação só de aprovados (RN04) | Implementada e testada |
+| Interface React + API FastAPI | Implementada |
 
 Para informações detalhadas, consulte a [documentação técnica e de stack](docs/ARQUITETURA_E_STACK.md).
 
 ## Pré-requisitos
 
 - Python 3.10 ou superior.
+- Node.js 20 ou superior (interface React).
 - Git.
 - Chave de API do Google Gemini, quando a integração estiver em uso.
 - Credenciais OCI, quando o armazenamento estiver configurado.
@@ -87,7 +87,7 @@ git clone https://github.com/Coutfernandes/MotorInteligente-G10.git
 cd MotorInteligente-G10
 python -m venv .venv
 .venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+python -m pip install -r backend/requirements.txt
 Copy-Item .env.example .env
 ```
 
@@ -98,7 +98,7 @@ git clone https://github.com/Coutfernandes/MotorInteligente-G10.git
 cd MotorInteligente-G10
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install -r requirements.txt
+python -m pip install -r backend/requirements.txt
 cp .env.example .env
 ```
 
@@ -109,47 +109,71 @@ Edite o arquivo `.env` criado a partir de `.env.example`.
 ```dotenv
 GOOGLE_API_KEY=sua_chave_do_gemini
 LLM_PROVIDER=gemini
-LLM_MODEL=gemini-1.5-flash
+LLM_MODEL=gemini-3.1-flash-lite
 ```
+
+Para testar a interface sem chave e sem gastar cota, use `LLM_PROVIDER=simulado`: as respostas da IA viram textos fixos marcados com `[Simulado]`.
+
+O `.env` e a chave `oci_api_key.pem` ficam na raiz do projeto. Sem as credenciais da OCI (`OCI_*`), os pacotes ficam salvos só em `data/saida/` e a interface avisa. Para conferir as credenciais: `cd backend` e `python scripts/verificar_oci.py`.
 
 Não versionar credenciais, chaves privadas ou arquivos `.env`.
 
 ## Execução
 
-Inicie a aplicação Streamlit:
+Terminal 1 (API):
 
 ```bash
-streamlit run src/app/main.py
+cd backend
+uvicorn src.api.main:app --reload
 ```
 
-Em seguida, acesse o endereço informado pelo terminal, normalmente `http://localhost:8501`.
+Terminal 2 (interface):
 
-A tela atual pode ser executada sem credenciais. O uso completo das integrações de IA e OCI depende das respectivas configurações.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Acesse `http://localhost:5173`.
+
+Para servir tudo por um só endereço, rode `npm run build` dentro de `frontend/` e acesse `http://localhost:8000`.
 
 ## Testes
 
 Execute os testes automatizados com:
 
 ```bash
-pytest
+cd backend && pytest
+cd frontend && npm run lint && npm run build
 ```
+
+Os testes não gastam cota do Gemini. Para rodar os que chamam a API de verdade: `pytest -m gemini`.
 
 ## Estrutura do projeto
 
 ```text
 .
-├── src/
-│   ├── analysis/       # Análise de sentimentos, schemas e integração com IA
-│   ├── app/            # Interface Streamlit
-│   ├── generation/     # Geração de conteúdos
-│   ├── ingestion/      # Ingestão de dados
-│   ├── orchestration/  # Coordenação do fluxo de processamento
-│   └── storage/        # Integração com OCI Object Storage
-├── data/               # Dados de exemplo
-├── tests/              # Testes automatizados
-├── docs/               # Documentação técnica
+├── backend/
+│   ├── src/
+│   │   ├── api/            # API FastAPI usada pela interface
+│   │   ├── ingestao/       # Leitura e validação de JSON/CSV
+│   │   ├── ia/             # Tudo que usa inteligência artificial
+│   │   │   ├── llm.py          # Cliente do Gemini (e modo simulado)
+│   │   │   ├── prompts/        # Prompts em .txt: analise/ e geracao/
+│   │   │   ├── analise/        # Sentimento, roteador (RN01/RN02) e agregação
+│   │   │   └── geracao/        # Post LinkedIn, newsletter e FAQ (RN06)
+│   │   ├── orquestracao/   # Pipeline LangGraph e curadoria (RN04)
+│   │   ├── armazenamento/  # OCI Object Storage + cópia local (RN03)
+│   │   └── caminhos.py     # Pastas do projeto
+│   ├── tests/              # Testes automatizados (pytest)
+│   ├── scripts/            # verificar_oci.py
+│   └── requirements.txt
+├── frontend/               # Interface React (Vite + TypeScript)
+│   └── src/visoes/         # Visão Geral, Ingestão, Curadoria, Exportação
+├── data/                   # Dados de exemplo e pacotes gerados (data/saida/)
+├── docs/                   # Documentação técnica
 ├── .env.example
-├── requirements.txt
 └── README.md
 ```
 
@@ -188,7 +212,7 @@ Não faça commits diretamente em `main` ou `develop`.
 | Matheus Coutinho | Tech Lead / Arquitetura | Gitflow, OCI Object Storage, arquitetura e revisão de PRs |
 | Matheus Antero | Backend — IA e prompts | Análise de sentimentos, prompts e geração de conteúdo |
 | Nathalia Marques | Backend — Dados e pipeline | Ingestão, validação, tratamento de erros e datasets |
-| Nicolas Firmino | Frontend Streamlit | Interface, visualização, curadoria e aprovação |
+| Nicolas Firmino | Frontend | Interface, visualização, curadoria e aprovação |
 | Rafael Victor | Produto, documentação e demonstração | Organização, documentação, testes e apresentação |
 
 ## Documentação relacionada
