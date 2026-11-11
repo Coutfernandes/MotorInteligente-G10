@@ -1,0 +1,3 @@
+# Scripts e arquivos de deploy rodam no Linux: sempre com quebra de linha LF.
+*.sh text eol=lf
+backend/deploy/* text eol=lf

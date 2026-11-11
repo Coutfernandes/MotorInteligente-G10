@@ -145,6 +145,10 @@ Acesse `http://localhost:5173`.
 
 Para servir tudo por um só endereço, rode `npm run build` dentro de `frontend/` e acesse `http://localhost:8000`.
 
+## Deploy
+
+Frontend na **Vercel** e backend numa VM *Always Free* da **Oracle Cloud** (HTTPS com Caddy). Passo a passo completo: [docs/DEPLOY.md](docs/DEPLOY.md).
+
 ## Testes
 
 Execute os testes automatizados com:
@@ -189,6 +193,7 @@ Detalhes e resultado esperado de cada um: [docs/DEMONSTRACAO.md](docs/DEMONSTRAC
 │   │   └── caminhos.py     # Pastas do projeto
 │   ├── tests/              # Testes automatizados (pytest)
 │   ├── scripts/            # verificar_oci.py
+│   ├── deploy/             # instalar.sh, serviço systemd e Caddyfile (Oracle Cloud)
 │   └── requirements.txt
 ├── frontend/               # Interface React (Vite + TypeScript)
 │   └── src/visoes/         # Visão Geral, Ingestão, Curadoria, Exportação
@@ -243,3 +248,4 @@ Não faça commits diretamente em `main` ou `develop`.
 - [Demonstração: vídeo e 3 exemplos](docs/DEMONSTRACAO.md)
 - [Testes de interface](docs/TESTES_INTERFACE.md)
 - [Checklist final](docs/CHECKLIST_FINAL.md)
+- [Deploy: Vercel + Oracle Cloud](docs/DEPLOY.md)
