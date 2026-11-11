@@ -101,8 +101,12 @@ export interface StatusSistema {
   oci: { configurado: boolean; bucket: string | null }
 }
 
+// Endereço da API. Vazio em desenvolvimento (o Vite repassa /api para o uvicorn);
+// na Vercel, VITE_API_URL aponta para o backend na Oracle Cloud (ex.: https://129-151-10-20.sslip.io).
+const BASE_API = (import.meta.env.VITE_API_URL ?? '').replace(/\/+$/, '')
+
 async function chamar<T>(caminho: string, opcoes?: RequestInit): Promise<T> {
-  const resposta = await fetch(caminho, opcoes)
+  const resposta = await fetch(BASE_API + caminho, opcoes)
   if (!resposta.ok) {
     const corpo = await resposta.json().catch(() => null)
     const detalhe = corpo?.detail
@@ -120,7 +124,7 @@ function comArquivo(arquivo: File): RequestInit {
 export const api = {
   status: () => chamar<StatusSistema>('/api/status'),
   arquivoExemplo: async () => {
-    const resposta = await fetch('/api/exemplo')
+    const resposta = await fetch(`${BASE_API}/api/exemplo`)
     if (!resposta.ok) throw new Error('Não foi possível carregar os dados de exemplo.')
     return new File([await resposta.blob()], 'interacoes_amostra.csv', { type: 'text/csv' })
   },
@@ -140,7 +144,7 @@ export const api = {
       `/api/pacotes/${id}/exportar`,
       { method: 'POST' },
     ),
-  urlDownload: (id: string, formato: 'json' | 'markdown') => `/api/pacotes/${id}/download?formato=${formato}`,
+  urlDownload: (id: string, formato: 'json' | 'markdown') => `${BASE_API}/api/pacotes/${id}/download?formato=${formato}`,
 }
 
 // ---- textos exibidos na tela ----

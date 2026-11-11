@@ -1,0 +1,17 @@
+# Serviço systemd da API do CommunityLab. O instalar.sh troca __RAIZ__ e __USUARIO__.
+[Unit]
+Description=CommunityLab API (FastAPI)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=__USUARIO__
+WorkingDirectory=__RAIZ__/backend
+# 1 processo só: o progresso dos processamentos fica em memória.
+ExecStart=__RAIZ__/.venv/bin/uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

@@ -10,6 +10,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ValidationError
@@ -31,6 +32,16 @@ PASTA_FRONTEND = PASTA_FRONTEND_BUILD
 ARQUIVO_EXEMPLO = PASTA_DADOS / "interacoes_amostra.csv"
 
 app = FastAPI(title="CommunityLab API")
+
+# Frontend em outro domínio (Vercel): CORS_ORIGINS=https://meu-projeto.vercel.app (vírgula separa vários).
+ORIGENS_PERMITIDAS = [o.strip().rstrip("/") for o in os.getenv("CORS_ORIGINS", "").split(",") if o.strip()]
+if ORIGENS_PERMITIDAS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ORIGENS_PERMITIDAS,
+        allow_methods=["GET", "POST", "PATCH"],
+        allow_headers=["Content-Type"],
+    )
 gerenciador = Gerenciador()
 
 
