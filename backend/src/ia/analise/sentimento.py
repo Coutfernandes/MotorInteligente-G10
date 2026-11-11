@@ -7,7 +7,7 @@ from langchain_core.exceptions import OutputParserException
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import ValidationError
 
-from src.ia.llm import carregar_prompt, criar_llm
+from src.ia.llm import carregar_prompt, chamar_com_espera, criar_llm, erro_temporario
 from src.ia.analise.schemas import AnaliseInteracao, RespostaLLM
 
 logger = logging.getLogger(__name__)
@@ -38,8 +38,12 @@ def _montar_mensagem(registro: dict) -> str:
     )
 
 
-def analisar_interacao(registro: dict, analisador=None) -> AnaliseInteracao:
-    """Analisa UMA mensagem com o Gemini (1 chamada, ou até 3 se a resposta vier inválida)."""
+def analisar_interacao(registro: dict, analisador=None, esperar=time.sleep) -> AnaliseInteracao:
+    """Analisa UMA mensagem com o Gemini (1 chamada, ou até 3 se a resposta vier inválida).
+
+    Se o Gemini estiver sobrecarregado (503) ou sem cota (429), espera e tenta de novo;
+    se continuar indisponível, levanta FalhaNaAnalise e a mensagem é pulada.
+    """
     analisador = analisador or criar_analisador()
     mensagens = [
         SystemMessage(content=carregar_prompt("analise_sentimento")),
@@ -48,7 +52,7 @@ def analisar_interacao(registro: dict, analisador=None) -> AnaliseInteracao:
 
     for tentativa in range(1 + TENTATIVAS_EXTRAS):
         try:
-            resposta = analisador.invoke(mensagens)
+            resposta = chamar_com_espera(lambda: analisador.invoke(mensagens), esperar)
             if resposta is None:
                 raise OutputParserException("o modelo não devolveu nenhum conteúdo")
             return AnaliseInteracao(
@@ -56,7 +60,11 @@ def analisar_interacao(registro: dict, analisador=None) -> AnaliseInteracao:
                 interaction_id=registro["interaction_id"],
                 tipo=registro["interaction_type"],
             )
-        except (OutputParserException, ValidationError) as erro:
+        except Exception as erro:
+            if erro_temporario(erro):
+                raise FalhaNaAnalise(f"Gemini indisponível ao analisar {registro['interaction_id']}: {erro}") from erro
+            if not isinstance(erro, (OutputParserException, ValidationError)):
+                raise
             logger.warning(
                 "Resposta inválida para %s (tentativa %d): %s",
                 registro["interaction_id"], tentativa + 1, erro,
@@ -91,7 +99,7 @@ def analisar_lote(
         if ao_analisar:
             ao_analisar(posicao + 1, len(registros))
         try:
-            analises.append(analisar_interacao(registro, analisador))
+            analises.append(analisar_interacao(registro, analisador, esperar))
         except FalhaNaAnalise as erro:
             logger.error("%s Mensagem pulada.", erro)
 

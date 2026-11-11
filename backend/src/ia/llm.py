@@ -1,16 +1,60 @@
-"""Cliente do Google Gemini e leitura dos prompts da análise."""
+"""Cliente do Google Gemini, leitura dos prompts da análise e tratamento de erros temporários (T03)."""
 
+import logging
 import os
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
+from langchain_core.exceptions import OutputParserException
 from langchain_google_genai import ChatGoogleGenerativeAI
+from pydantic import ValidationError
+
+logger = logging.getLogger(__name__)
 
 PASTA_PROMPTS = Path(__file__).parent / "prompts" / "analise"
 
 # Tentativas automáticas da biblioteca em erros de rede/cota.
 # Fica baixo de propósito: cada tentativa gasta cota gratuita.
 TENTATIVAS_DE_REDE = 2
+
+# Esperas (segundos) antes de tentar de novo quando o Gemini está sobrecarregado (503)
+# ou a cota por minuto acabou (429). Depois da última, a mensagem é pulada.
+ESPERAS_ERRO_TEMPORARIO = (15.0, 30.0)
+
+CODIGOS_TEMPORARIOS = {429, 500, 503, 504}
+MARCAS_TEMPORARIAS = ("429", "503", "RESOURCE_EXHAUSTED", "UNAVAILABLE", "high demand", "overloaded")
+
+
+def erro_temporario(erro: Exception) -> bool:
+    """True para falhas que passam sozinhas (sobrecarga ou cota por minuto).
+
+    False para o resto: chave errada, modelo inexistente, resposta fora do formato etc.
+    """
+    if isinstance(erro, (OutputParserException, ValidationError)):
+        return False
+    # O LangChain embrulha o erro do Google: o código HTTP pode estar no erro original (__cause__).
+    for candidato in (erro, erro.__cause__):
+        for atributo in ("code", "status_code"):
+            codigo = getattr(candidato, atributo, None)
+            if isinstance(codigo, int):
+                return codigo in CODIGOS_TEMPORARIOS
+    texto = str(erro)
+    return any(marca in texto for marca in MARCAS_TEMPORARIAS)
+
+
+def chamar_com_espera(funcao, esperar=time.sleep, esperas=None):
+    """Executa `funcao()`; em erro temporário espera e tenta de novo. Outros erros sobem na hora."""
+    esperas = ESPERAS_ERRO_TEMPORARIO if esperas is None else esperas
+    for numero, segundos in enumerate(esperas, start=1):
+        try:
+            return funcao()
+        except Exception as erro:
+            if not erro_temporario(erro):
+                raise
+            logger.warning("Gemini indisponível (%s). Nova tentativa %d em %.0f s.", erro, numero, segundos)
+            esperar(segundos)
+    return funcao()
 
 
 def modo_simulado() -> bool:

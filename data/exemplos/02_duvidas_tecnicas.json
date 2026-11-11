@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "descricao": "Exemplo 2 (RN02): só dúvidas técnicas e pedidos de ajuda. Esperado: 1 FAQ e o aviso da RN05 (só 1 formato gerado).",
+  "records": [
+    {
+      "interaction_id": "EX2-001",
+      "author_id": "a_ex2_001",
+      "channel": "duvidas-rag",
+      "interaction_type": "pergunta_tecnica",
+      "created_at": "2026-11-03T08:50:00Z",
+      "text": "No RAG, vale mais a pena guardar o texto inteiro do documento ou só os trechos? Estou em dúvida sobre o que mandar para o banco vetorial.",
+      "reactions": 15,
+      "consent_marketing": true
+    },
+    {
+      "interaction_id": "EX2-002",
+      "author_id": "a_ex2_002",
+      "channel": "duvidas-langgraph",
+      "interaction_type": "pergunta_tecnica",
+      "created_at": "2026-11-03T16:12:00Z",
+      "text": "Como faço para o LangGraph voltar para uma etapa anterior quando a resposta do modelo vem incompleta? Tentei com um if dentro do nó e virou bagunça.",
+      "reactions": 11,
+      "consent_marketing": false
+    },
+    {
+      "interaction_id": "EX2-003",
+      "author_id": "a_ex2_003",
+      "channel": "apoio-e-estudos",
+      "interaction_type": "pedido_ajuda",
+      "created_at": "2026-11-04T21:30:00Z",
+      "text": "Minha chave da API do Gemini dá erro 429 depois de poucas chamadas. É limite do plano gratuito? Tem jeito de contornar sem pagar?",
+      "reactions": 19,
+      "consent_marketing": true
+    },
+    {
+      "interaction_id": "EX2-004",
+      "author_id": "a_ex2_004",
+      "channel": "duvidas-rag",
+      "interaction_type": "pergunta_tecnica",
+      "created_at": "2026-11-05T10:05:00Z",
+      "text": "Qual a diferença prática entre embeddings multilíngues e os treinados só em inglês para textos em português?",
+      "reactions": 9,
+      "consent_marketing": true
+    },
+    {
+      "interaction_id": "EX2-005",
+      "author_id": "a_ex2_005",
+      "channel": "suporte",
+      "interaction_type": "pedido_ajuda",
+      "created_at": "2026-11-06T13:45:00Z",
+      "text": "Alguém já subiu arquivos para o OCI Object Storage pelo Python? O meu dá erro de autenticação mesmo com a chave configurada.",
+      "reactions": 7,
+      "consent_marketing": false
+    }
+  ]
+}
