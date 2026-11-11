@@ -1,0 +1,11 @@
+interaction_id,author_id,channel,interaction_type,created_at,text,reactions,consent_marketing
+EX3-001,a_ex3_001,conquistas-e-vagas,depoimento,2026-11-03T09:00:00Z,"Fui contratado como desenvolvedor júnior! O portfólio com projetos de IA que montei na formação foi o assunto da entrevista inteira.",44,sim
+EX3-002,a_ex3_002,conquistas-e-vagas,depoimento,2026-11-03T12:30:00Z,"Passei no processo seletivo de estágio em ciência de dados! Muito feliz, mas prefiro não aparecer em publicações.",38,não
+EX3-003,a_ex3_003,projetos,entrega_projeto,2026-11-04T15:10:00Z,"Entreguei o chatbot que ajuda a comunidade a encontrar materiais de estudo por tema. Ficou rápido e as respostas citam a fonte.",26,sim
+EX3-004,a_ex3_004,duvidas-langgraph,pergunta_tecnica,2026-11-04T17:20:00Z,"Como salvo o estado de uma conversa no LangGraph para continuar no dia seguinte?",12,sim
+EX3-005,a_ex3_005,duvidas-rag,pergunta_tecnica,2026-11-05T08:40:00Z,"Qual tamanho de trecho vocês usam para dividir PDFs longos antes de gerar os embeddings?",10,não
+EX3-006,a_ex3_006,feedback-formacao,feedback_negativo,2026-11-05T19:00:00Z,"As aulas de implantação ficaram muito rápidas e senti falta de exemplos com erro real.",8,sim
+EX3-007,a_ex3_007,suporte,mensagem_operacional,2026-11-06T07:30:00Z,"Lembrete: a mentoria desta semana muda para quinta às 19h.",3,sim
+EX3-008,a_ex3_008,projetos,entrega_projeto,2026-11-06T10:00:00Z,,5,sim
+EX3-001,a_ex3_009,debates-ia,debate,2026-11-06T11:00:00Z,"Vocês acham que agentes vão substituir ferramentas de automação tradicionais?",14,sim
+EX3-010,a_ex3_010,apoio-e-estudos,pedido_ajuda,ontem à tarde,"Alguém tem um roteiro de estudos de LangChain para quem está começando?",6,sim

@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "descricao": "Exemplo 1 (RN01): relatos positivos com consentimento de marketing. Esperado: posts de LinkedIn e newsletter.",
+  "records": [
+    {
+      "interaction_id": "EX1-001",
+      "author_id": "a_ex1_001",
+      "channel": "conquistas-e-vagas",
+      "interaction_type": "depoimento",
+      "created_at": "2026-11-03T09:15:00Z",
+      "text": "Gente, consegui meu primeiro estágio em engenharia de dados! Na entrevista pediram para explicar um pipeline e eu mostrei o projeto de ETL que montei com a ajuda de vocês no grupo de estudos. Obrigado por cada revisão de código.",
+      "reactions": 58,
+      "consent_marketing": true
+    },
+    {
+      "interaction_id": "EX1-002",
+      "author_id": "a_ex1_002",
+      "channel": "projetos",
+      "interaction_type": "entrega_projeto",
+      "created_at": "2026-11-03T14:40:00Z",
+      "text": "Terminei o agente com LangGraph que responde dúvidas sobre o edital do programa. Ele consulta os documentos oficiais e mostra de onde tirou cada resposta. Código no meu GitHub, aceito sugestões!",
+      "reactions": 37,
+      "consent_marketing": true
+    },
+    {
+      "interaction_id": "EX1-003",
+      "author_id": "a_ex1_003",
+      "channel": "feedback-formacao",
+      "interaction_type": "feedback_positivo",
+      "created_at": "2026-11-04T11:05:00Z",
+      "text": "A trilha de prompts mudou meu jeito de trabalhar. Hoje uso modelos de linguagem para revisar documentação no meu emprego e o time inteiro adotou o processo.",
+      "reactions": 24,
+      "consent_marketing": true
+    },
+    {
+      "interaction_id": "EX1-004",
+      "author_id": "a_ex1_004",
+      "channel": "conquistas-e-vagas",
+      "interaction_type": "depoimento",
+      "created_at": "2026-11-05T18:22:00Z",
+      "text": "Depois de oito meses estudando à noite, fui promovida a analista de IA na empresa onde trabalho. O certificado da OCI e os desafios semanais da comunidade fizeram muita diferença.",
+      "reactions": 71,
+      "consent_marketing": true
+    },
+    {
+      "interaction_id": "EX1-005",
+      "author_id": "a_ex1_005",
+      "channel": "projetos",
+      "interaction_type": "entrega_projeto",
+      "created_at": "2026-11-06T10:30:00Z",
+      "text": "Publiquei o painel que classifica feedbacks de clientes com IA. Começou como exercício da formação e agora a ONG onde sou voluntário usa toda semana.",
+      "reactions": 29,
+      "consent_marketing": true
+    }
+  ]
+}

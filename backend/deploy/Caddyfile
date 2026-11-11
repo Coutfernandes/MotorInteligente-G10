@@ -1,0 +1,5 @@
+# Caddy: HTTPS automático (Let's Encrypt) na frente da API. O instalar.sh troca __DOMINIO__.
+__DOMINIO__ {
+	encode gzip
+	reverse_proxy 127.0.0.1:8000
+}
