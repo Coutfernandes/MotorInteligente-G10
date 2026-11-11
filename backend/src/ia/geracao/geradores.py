@@ -8,7 +8,7 @@ from langchain_core.exceptions import OutputParserException
 from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import ValidationError
 
-from src.ia.llm import criar_llm
+from src.ia.llm import chamar_com_espera, criar_llm, erro_temporario
 from src.ia.analise.schemas import MensagemRoteada, ResumoComunidade, Rota
 from src.ia.geracao.schemas import Ativo, ConteudoGerado, TipoAtivo
 
@@ -57,17 +57,22 @@ def _mais_relevantes(mensagens: list[MensagemRoteada], rotas: set[Rota], limite:
     return sorted(escolhidas, key=lambda m: m.relevancia, reverse=True)[:limite]
 
 
-def _gerar(tipo: TipoAtivo, pedido: str, gerador) -> ConteudoGerado:
-    """Faz a chamada ao Gemini, tentando de novo se a resposta vier fora do formato."""
+def _gerar(tipo: TipoAtivo, pedido: str, gerador, esperar=time.sleep) -> ConteudoGerado:
+    """Faz a chamada ao Gemini, tentando de novo se a resposta vier fora do formato
+    ou se o Gemini estiver sobrecarregado/sem cota (T03)."""
     mensagens = [SystemMessage(content=carregar_prompt(tipo)), HumanMessage(content=pedido)]
 
     for tentativa in range(1 + TENTATIVAS_EXTRAS):
         try:
-            resposta = gerador.invoke(mensagens)
+            resposta = chamar_com_espera(lambda: gerador.invoke(mensagens), esperar)
             if resposta is None:
                 raise OutputParserException("o modelo não devolveu nenhum conteúdo")
             return ConteudoGerado(**resposta.model_dump())
-        except (OutputParserException, ValidationError) as erro:
+        except Exception as erro:
+            if erro_temporario(erro):
+                raise FalhaNaGeracao(f"Gemini indisponível ao gerar {tipo.value}: {erro}") from erro
+            if not isinstance(erro, (OutputParserException, ValidationError)):
+                raise
             logger.warning("Resposta inválida ao gerar %s (tentativa %d): %s", tipo.value, tentativa + 1, erro)
             mensagens = mensagens[:2] + [
                 HumanMessage(
@@ -78,14 +83,16 @@ def _gerar(tipo: TipoAtivo, pedido: str, gerador) -> ConteudoGerado:
     raise FalhaNaGeracao(f"Não foi possível gerar o ativo do tipo {tipo.value}.")
 
 
-def gerar_post_linkedin(mensagem: MensagemRoteada, texto: str, gerador, numero: int = 1) -> Ativo:
+def gerar_post_linkedin(mensagem: MensagemRoteada, texto: str, gerador, numero: int = 1, esperar=time.sleep) -> Ativo:
     """F05 / RN01: um post inspirador a partir de UM relato positivo."""
     pedido = f"Relato da comunidade:\n{_descrever(mensagem, texto)}"
-    conteudo = _gerar(TipoAtivo.LINKEDIN, pedido, gerador)
+    conteudo = _gerar(TipoAtivo.LINKEDIN, pedido, gerador, esperar)
     return Ativo(**conteudo.model_dump(), id=f"linkedin-{numero}", tipo=TipoAtivo.LINKEDIN, fontes=[mensagem.interaction_id])
 
 
-def gerar_newsletter(mensagens: list[MensagemRoteada], textos: dict[str, str], resumo: ResumoComunidade, gerador) -> Ativo:
+def gerar_newsletter(
+    mensagens: list[MensagemRoteada], textos: dict[str, str], resumo: ResumoComunidade, gerador, esperar=time.sleep
+) -> Ativo:
     """F06 / RN01: destaques celebrativos a partir dos relatos positivos do lote."""
     relatos = "\n\n".join(_descrever(m, textos[m.interaction_id]) for m in mensagens)
     pedido = (
@@ -93,16 +100,16 @@ def gerar_newsletter(mensagens: list[MensagemRoteada], textos: dict[str, str], r
         f"Total de interações analisadas: {resumo.total_interacoes_processadas}\n\n"
         f"Relatos positivos:\n\n{relatos}"
     )
-    conteudo = _gerar(TipoAtivo.NEWSLETTER, pedido, gerador)
+    conteudo = _gerar(TipoAtivo.NEWSLETTER, pedido, gerador, esperar)
     return Ativo(
         **conteudo.model_dump(), id="newsletter-1", tipo=TipoAtivo.NEWSLETTER, fontes=[m.interaction_id for m in mensagens]
     )
 
 
-def gerar_faq(mensagens: list[MensagemRoteada], textos: dict[str, str], gerador) -> Ativo:
+def gerar_faq(mensagens: list[MensagemRoteada], textos: dict[str, str], gerador, esperar=time.sleep) -> Ativo:
     """F07 / RN02: FAQ didático a partir das dúvidas e relatos neutros do lote."""
     duvidas = "\n\n".join(_descrever(m, textos[m.interaction_id]) for m in mensagens)
-    conteudo = _gerar(TipoAtivo.FAQ, f"Dúvidas e relatos da comunidade:\n\n{duvidas}", gerador)
+    conteudo = _gerar(TipoAtivo.FAQ, f"Dúvidas e relatos da comunidade:\n\n{duvidas}", gerador, esperar)
     return Ativo(**conteudo.model_dump(), id="faq-1", tipo=TipoAtivo.FAQ, fontes=[m.interaction_id for m in mensagens])
 
 
@@ -114,11 +121,13 @@ def gerar_ativos(
     intervalo: float = 0.0,
     esperar=time.sleep,
     ao_gerar=None,
+    ao_falhar=None,
 ) -> list[Ativo]:
     """Gera todos os ativos possíveis para o lote, respeitando as rotas decididas pelo roteador.
 
     Ativos que falham em todas as tentativas são registrados no log e pulados.
     `ao_gerar(atual, total)` é chamado antes de cada chamada ao Gemini (para mostrar progresso).
+    `ao_falhar(motivo)` é chamado para cada ativo pulado (para avisar na interface).
     """
     gerador = gerador or criar_gerador()
     textos = {r["interaction_id"]: r["text"] for r in registros}
@@ -127,13 +136,13 @@ def gerar_ativos(
     duvidas = _mais_relevantes(mensagens, {Rota.FAQ}, MAX_MENSAGENS_FAQ)
 
     tarefas = [
-        lambda m=m, n=n: gerar_post_linkedin(m, textos[m.interaction_id], gerador, n)
+        lambda m=m, n=n: gerar_post_linkedin(m, textos[m.interaction_id], gerador, n, esperar)
         for n, m in enumerate(positivas[:MAX_POSTS_LINKEDIN], start=1)
     ]
     if positivas:
-        tarefas.append(lambda: gerar_newsletter(positivas[:MAX_DESTAQUES_NEWSLETTER], textos, resumo, gerador))
+        tarefas.append(lambda: gerar_newsletter(positivas[:MAX_DESTAQUES_NEWSLETTER], textos, resumo, gerador, esperar))
     if duvidas:
-        tarefas.append(lambda: gerar_faq(duvidas, textos, gerador))
+        tarefas.append(lambda: gerar_faq(duvidas, textos, gerador, esperar))
 
     ativos = []
     for posicao, tarefa in enumerate(tarefas):
@@ -145,5 +154,7 @@ def gerar_ativos(
             ativos.append(tarefa())
         except FalhaNaGeracao as erro:
             logger.error("%s Ativo pulado.", erro)
+            if ao_falhar:
+                ao_falhar(str(erro))
 
     return ativos

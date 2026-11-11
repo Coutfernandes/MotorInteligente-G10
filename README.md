@@ -4,6 +4,12 @@ Motor inteligente de transformação e distribuição de conteúdo para comunida
 
 Projeto desenvolvido para o Hackathon ONE G10, por equipes da Oracle Next Education e Alura.
 
+## Demonstração em vídeo
+
+[![Assistir à demonstração do CommunityLab no YouTube](https://img.youtube.com/vi/cL1PbDTTmdc/hqdefault.jpg)](https://youtu.be/cL1PbDTTmdc)
+
+**[Assistir no YouTube](https://youtu.be/cL1PbDTTmdc)**: fluxo completo com Gemini e OCI reais (ingestão, análise com IA, curadoria humana e exportação ao bucket).
+
 ## Visão geral
 
 O CommunityLab transforma interações e conquistas de comunidades digitais em conteúdo estratégico para canais como LinkedIn, X (Twitter) e newsletters.
@@ -150,6 +156,21 @@ cd frontend && npm run lint && npm run build
 
 Os testes não gastam cota do Gemini. Para rodar os que chamam a API de verdade: `pytest -m gemini`.
 
+- Roteiro de teste manual das 4 telas: [docs/TESTES_INTERFACE.md](docs/TESTES_INTERFACE.md)
+- Requisitos, regras de negócio e onde cada um é testado: [docs/CHECKLIST_FINAL.md](docs/CHECKLIST_FINAL.md)
+
+## Exemplos de demonstração
+
+A pasta `data/exemplos/` tem 3 arquivos prontos para enviar na tela de Ingestão:
+
+| Arquivo | O que demonstra |
+| --- | --- |
+| `01_relatos_positivos.json` | RN01: relatos positivos com consentimento viram posts de LinkedIn e newsletter |
+| `02_duvidas_tecnicas.json` | RN02: dúvidas viram FAQ, e a interface avisa a RN05 (só 1 formato) |
+| `03_lote_misto.csv` | Validação (3 registros rejeitados), positivo sem consentimento fora dos posts, negativos e operacionais ignorados |
+
+Detalhes e resultado esperado de cada um: [docs/DEMONSTRACAO.md](docs/DEMONSTRACAO.md).
+
 ## Estrutura do projeto
 
 ```text
@@ -171,7 +192,7 @@ Os testes não gastam cota do Gemini. Para rodar os que chamam a API de verdade:
 │   └── requirements.txt
 ├── frontend/               # Interface React (Vite + TypeScript)
 │   └── src/visoes/         # Visão Geral, Ingestão, Curadoria, Exportação
-├── data/                   # Dados de exemplo e pacotes gerados (data/saida/)
+├── data/                   # Dataset, amostra, exemplos/ (F14) e pacotes gerados (saida/)
 ├── docs/                   # Documentação técnica
 ├── .env.example
 └── README.md
@@ -219,3 +240,6 @@ Não faça commits diretamente em `main` ou `develop`.
 
 - [Arquitetura do sistema](docs/arquitetura.md)
 - [Stack técnica e estado da implementação](docs/ARQUITETURA_E_STACK.md)
+- [Demonstração: vídeo e 3 exemplos](docs/DEMONSTRACAO.md)
+- [Testes de interface](docs/TESTES_INTERFACE.md)
+- [Checklist final](docs/CHECKLIST_FINAL.md)

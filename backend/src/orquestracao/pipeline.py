@@ -63,12 +63,19 @@ def montar_grafo(analisador, gerador, intervalo: float, ao_progredir: Progresso 
         return {"resumo": agregar(estado["mensagens"])}
 
     def gerar(estado: Estado) -> Estado:
+        pulados: list[str] = []
         ativos = gerar_ativos(
             estado["mensagens"], estado["registros"], estado["resumo"], gerador, intervalo,
             ao_gerar=lambda atual, total: ao_progredir("geracao", atual, total),
+            ao_falhar=pulados.append,
         )
         formatos = {a.tipo for a in ativos}
         avisos = list(estado["avisos"])
+        if pulados:
+            avisos.append(
+                f"{len(pulados)} conteúdo(s) não puderam ser gerados "
+                "(Gemini indisponível ou resposta inválida) e ficaram de fora."
+            )
         if len(formatos) < MINIMO_DE_FORMATOS:
             avisos.append(
                 f"RN05: só {len(formatos)} formato(s) gerado(s) "
