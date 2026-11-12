@@ -66,6 +66,29 @@ def test_posts_saem_dos_mais_relevantes_e_respeitam_o_limite():
     assert [p.fontes[0] for p in posts] == ["INT-90", "INT-80", "INT-70"]
 
 
+def test_faq_prefere_duvidas_a_debates():
+    # O debate é o mais relevante, mas as dúvidas reais ocupam as vagas primeiro (RN02).
+    debate = mensagem("DEB", Rota.FAQ, relevancia=95, tipo="debate")
+    duvidas = [
+        mensagem(f"DUV-{n}", Rota.FAQ, relevancia=50 + n, tipo="pergunta_tecnica")
+        for n in range(geradores.MAX_MENSAGENS_FAQ)
+    ]
+    mensagens = [debate, *duvidas]
+    ativos = geradores.gerar_ativos(mensagens, registros_de(mensagens), RESUMO, GeradorFalso())
+
+    assert "DEB" not in ativos[0].fontes
+    assert len(ativos[0].fontes) == geradores.MAX_MENSAGENS_FAQ
+
+
+def test_faq_completa_com_debates_quando_sobra_vaga():
+    mensagens = [
+        mensagem("DEB", Rota.FAQ, relevancia=95, tipo="debate"),
+        mensagem("DUV", Rota.FAQ, relevancia=60, tipo="pedido_ajuda"),
+    ]
+    ativos = geradores.gerar_ativos(mensagens, registros_de(mensagens), RESUMO, GeradorFalso())
+    assert ativos[0].fontes == ["DUV", "DEB"]
+
+
 def test_texto_original_vai_no_pedido_e_tom_no_prompt():
     mensagens = [mensagem("INT-1", Rota.CASE)]
     falso = GeradorFalso()
@@ -101,3 +124,9 @@ def test_tenta_de_novo_e_pula_ativo_que_falha_sempre():
 @pytest.mark.parametrize("tipo", list(TipoAtivo))
 def test_todo_prompt_tem_as_regras_comuns(tipo):
     assert "Não invente" in geradores.carregar_prompt(tipo)
+
+
+@pytest.mark.parametrize("tipo", list(TipoAtivo))
+def test_todo_prompt_tem_exemplos_de_estilo(tipo):
+    # Seção 8 das diretrizes: 2 ou 3 exemplos (few-shot) por prompt de geração.
+    assert 2 <= geradores.carregar_prompt(tipo).count("### Exemplo ") <= 3

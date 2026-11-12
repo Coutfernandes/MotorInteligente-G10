@@ -7,3 +7,57 @@ Sua tarefa é escrever a seção de destaques da semana a partir dos relatos pos
 - Depois, uma lista em Markdown ("- ") com um destaque por relato, cada um com 1 ou 2 frases.
 - Termine com 1 frase de encerramento que convide a comunidade a compartilhar novas conquistas.
 - Até 1.800 caracteres no conteúdo.
+
+## Exemplos de estilo
+Os exemplos abaixo mostram só o tom e a estrutura. Não copie fatos, números, tecnologias nem frases deles: use apenas os relatos e o resumo recebidos.
+
+### Exemplo 1
+Temas mais falados no período: rag, carreira, oci
+Total de interações analisadas: 30
+
+Relatos positivos:
+
+Tipo: depoimento
+Tópicos: carreira, contratacao
+Texto: Fui promovida a Analista de Dados Pleno! O curso de visualização que fizemos juntos fez diferença na avaliação.
+
+Tipo: entrega_projeto
+Tópicos: rag, projeto_pratico
+Texto: Publiquei meu chatbot com RAG que responde dúvidas sobre o regulamento do curso. Agora ele mostra a fonte de cada resposta.
+
+Tipo: feedback_positivo
+Tópicos: oci, documentacao
+Texto: O tutorial de criação de conta na OCI salvou minha semana: consegui criar meu primeiro bucket sem custo.
+
+Título: Destaques da semana: promoção, RAG no ar e primeiros passos na nuvem
+Conteúdo:
+Que semana! 🎉 Nas 30 interações analisadas, RAG, carreira e OCI foram os temas que mais movimentaram a comunidade, e cada um rendeu uma vitória para comemorar.
+
+- **Promoção:** uma pessoa da comunidade chegou a Analista de Dados Pleno e contou que o curso de visualização feito com a turma fez diferença na avaliação.
+- **RAG no ar:** um chatbot que responde dúvidas sobre o regulamento do curso foi publicado e agora mostra a fonte de cada resposta.
+- **Primeiro bucket na nuvem:** com o tutorial de criação de conta na OCI, mais um integrante criou seu primeiro bucket sem custo.
+
+Cada conquista dessas é de toda a comunidade. Tem uma vitória para contar? Compartilhe com a gente!
+
+### Exemplo 2
+Temas mais falados no período: prompts, automacao, portfolio
+Total de interações analisadas: 18
+
+Relatos positivos:
+
+Tipo: feedback_positivo
+Tópicos: prompts
+Texto: A aula sobre few-shot mudou meus prompts. As respostas ficaram muito mais consistentes.
+
+Tipo: entrega_projeto
+Tópicos: automacao, portfolio
+Texto: Automatizei com Python o envio do relatório semanal da minha equipe e coloquei o projeto no portfólio.
+
+Título: Destaques da semana: prompts afinados e automação no portfólio
+Conteúdo:
+Mais uma semana de aprendizado coletivo! Prompts, automação e portfólio foram os assuntos que mais apareceram nas 18 interações analisadas.
+
+- **Prompts afinados:** depois da aula sobre few-shot, uma pessoa da comunidade passou a receber respostas muito mais consistentes.
+- **Automação que vira portfólio:** um integrante automatizou com Python o envio do relatório semanal da equipe e já incluiu o projeto no portfólio.
+
+Parabéns a todos que estão colocando o estudo em prática! Conte sua próxima conquista para a comunidade celebrar junto. 👏

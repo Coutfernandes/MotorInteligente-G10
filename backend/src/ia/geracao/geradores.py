@@ -9,6 +9,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import ValidationError
 
 from src.ia.llm import chamar_com_espera, criar_llm, erro_temporario
+from src.ia.analise.roteador import TIPOS_DUVIDA
 from src.ia.analise.schemas import MensagemRoteada, ResumoComunidade, Rota
 from src.ia.geracao.schemas import Ativo, ConteudoGerado, TipoAtivo
 
@@ -55,6 +56,13 @@ def _descrever(mensagem: MensagemRoteada, texto: str) -> str:
 def _mais_relevantes(mensagens: list[MensagemRoteada], rotas: set[Rota], limite: int) -> list[MensagemRoteada]:
     escolhidas = [m for m in mensagens if m.rota in rotas]
     return sorted(escolhidas, key=lambda m: m.relevancia, reverse=True)[:limite]
+
+
+def _duvidas_primeiro(mensagens: list[MensagemRoteada], limite: int) -> list[MensagemRoteada]:
+    """RN02: debates e relatos neutros também vão para o FAQ, mas as dúvidas reais têm a preferência.
+    Os demais só entram se sobrar vaga."""
+    escolhidas = [m for m in mensagens if m.rota == Rota.FAQ]
+    return sorted(escolhidas, key=lambda m: (m.tipo in TIPOS_DUVIDA, m.relevancia), reverse=True)[:limite]
 
 
 def _gerar(tipo: TipoAtivo, pedido: str, gerador, esperar=time.sleep) -> ConteudoGerado:
@@ -133,7 +141,7 @@ def gerar_ativos(
     textos = {r["interaction_id"]: r["text"] for r in registros}
 
     positivas = _mais_relevantes(mensagens, ROTAS_POSITIVAS, max(MAX_POSTS_LINKEDIN, MAX_DESTAQUES_NEWSLETTER))
-    duvidas = _mais_relevantes(mensagens, {Rota.FAQ}, MAX_MENSAGENS_FAQ)
+    duvidas = _duvidas_primeiro(mensagens, MAX_MENSAGENS_FAQ)
 
     tarefas = [
         lambda m=m, n=n: gerar_post_linkedin(m, textos[m.interaction_id], gerador, n, esperar)
