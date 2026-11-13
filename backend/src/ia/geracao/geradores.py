@@ -23,6 +23,8 @@ MAX_MENSAGENS_FAQ = 5
 MAX_DESTAQUES_NEWSLETTER = 5
 TEMPERATURA_GERACAO = 0.7
 TENTATIVAS_EXTRAS = 2
+# Conteúdo maior que isso, sem nenhuma quebra de linha, é pedido de novo (o Markdown não aparece na tela).
+CARACTERES_SEM_QUEBRA = 300
 # ------------------------------------------------------------------
 
 ROTAS_POSITIVAS = {Rota.CASE, Rota.LINKEDIN}
@@ -75,7 +77,15 @@ def _gerar(tipo: TipoAtivo, pedido: str, gerador, esperar=time.sleep) -> Conteud
             resposta = chamar_com_espera(lambda: gerador.invoke(mensagens), esperar)
             if resposta is None:
                 raise OutputParserException("o modelo não devolveu nenhum conteúdo")
-            return ConteudoGerado(**resposta.model_dump())
+            conteudo = ConteudoGerado(**resposta.model_dump())
+            if len(conteudo.conteudo) > CARACTERES_SEM_QUEBRA and "\n" not in conteudo.conteudo:
+                if tentativa < TENTATIVAS_EXTRAS:
+                    raise OutputParserException(
+                        "o conteúdo veio em uma linha só; separe parágrafos, títulos e itens de lista com quebras de linha"
+                    )
+                # Na última tentativa, fica com o texto assim mesmo: a curadoria pode ajustar a formatação.
+                logger.warning("%s gerado sem quebras de linha depois de todas as tentativas.", tipo.value)
+            return conteudo
         except Exception as erro:
             if erro_temporario(erro):
                 raise FalhaNaGeracao(f"Gemini indisponível ao gerar {tipo.value}: {erro}") from erro

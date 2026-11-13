@@ -121,6 +121,41 @@ def test_tenta_de_novo_e_pula_ativo_que_falha_sempre():
     assert "resposta anterior foi inválida" in falso.chamadas[1][-1].content
 
 
+TEXTO_EM_UMA_LINHA = "palavra " * 60
+TEXTO_COM_QUEBRAS = "Primeiro parágrafo.\n\nSegundo parágrafo."
+
+
+def test_pede_de_novo_quando_o_texto_vem_em_uma_linha_so():
+    mensagens = [mensagem("INT-1", Rota.FAQ, tipo="pergunta_tecnica")]
+    falso = GeradorFalso([
+        ConteudoGerado(titulo="FAQ", conteudo=TEXTO_EM_UMA_LINHA),
+        ConteudoGerado(titulo="FAQ", conteudo=TEXTO_COM_QUEBRAS),
+    ])
+
+    ativos = geradores.gerar_ativos(mensagens, registros_de(mensagens), RESUMO, falso)
+
+    assert ativos[0].conteudo == TEXTO_COM_QUEBRAS
+    assert "uma linha só" in falso.chamadas[1][-1].content
+
+
+def test_mantem_o_texto_em_uma_linha_se_todas_as_tentativas_falharem():
+    # Melhor um ativo mal formatado na curadoria do que perder o ativo (RN05).
+    mensagens = [mensagem("INT-1", Rota.FAQ, tipo="pergunta_tecnica")]
+    falso = GeradorFalso([ConteudoGerado(titulo="FAQ", conteudo=TEXTO_EM_UMA_LINHA)] * (1 + geradores.TENTATIVAS_EXTRAS))
+
+    ativos = geradores.gerar_ativos(mensagens, registros_de(mensagens), RESUMO, falso)
+
+    assert ativos[0].conteudo == TEXTO_EM_UMA_LINHA
+    assert len(falso.chamadas) == 1 + geradores.TENTATIVAS_EXTRAS
+
+
+def test_texto_curto_em_uma_linha_e_aceito():
+    mensagens = [mensagem("INT-1", Rota.FAQ, tipo="pergunta_tecnica")]
+    falso = GeradorFalso([ConteudoGerado(titulo="FAQ", conteudo="Resposta curta.")])
+    geradores.gerar_ativos(mensagens, registros_de(mensagens), RESUMO, falso)
+    assert len(falso.chamadas) == 1
+
+
 @pytest.mark.parametrize("tipo", list(TipoAtivo))
 def test_todo_prompt_tem_as_regras_comuns(tipo):
     assert "Não invente" in geradores.carregar_prompt(tipo)
