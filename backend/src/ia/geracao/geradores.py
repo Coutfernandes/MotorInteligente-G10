@@ -9,6 +9,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import ValidationError
 
 from src.ia.llm import chamar_com_espera, criar_llm, erro_temporario
+from src.ia.analise.roteador import TIPOS_DUVIDA
 from src.ia.analise.schemas import MensagemRoteada, ResumoComunidade, Rota
 from src.ia.geracao.schemas import Ativo, ConteudoGerado, TipoAtivo
 
@@ -22,6 +23,8 @@ MAX_MENSAGENS_FAQ = 5
 MAX_DESTAQUES_NEWSLETTER = 5
 TEMPERATURA_GERACAO = 0.7
 TENTATIVAS_EXTRAS = 2
+# Conteúdo maior que isso, sem nenhuma quebra de linha, é pedido de novo (o Markdown não aparece na tela).
+CARACTERES_SEM_QUEBRA = 300
 # ------------------------------------------------------------------
 
 ROTAS_POSITIVAS = {Rota.CASE, Rota.LINKEDIN}
@@ -57,6 +60,13 @@ def _mais_relevantes(mensagens: list[MensagemRoteada], rotas: set[Rota], limite:
     return sorted(escolhidas, key=lambda m: m.relevancia, reverse=True)[:limite]
 
 
+def _duvidas_primeiro(mensagens: list[MensagemRoteada], limite: int) -> list[MensagemRoteada]:
+    """RN02: debates e relatos neutros também vão para o FAQ, mas as dúvidas reais têm a preferência.
+    Os demais só entram se sobrar vaga."""
+    escolhidas = [m for m in mensagens if m.rota == Rota.FAQ]
+    return sorted(escolhidas, key=lambda m: (m.tipo in TIPOS_DUVIDA, m.relevancia), reverse=True)[:limite]
+
+
 def _gerar(tipo: TipoAtivo, pedido: str, gerador, esperar=time.sleep) -> ConteudoGerado:
     """Faz a chamada ao Gemini, tentando de novo se a resposta vier fora do formato
     ou se o Gemini estiver sobrecarregado/sem cota (T03)."""
@@ -67,7 +77,15 @@ def _gerar(tipo: TipoAtivo, pedido: str, gerador, esperar=time.sleep) -> Conteud
             resposta = chamar_com_espera(lambda: gerador.invoke(mensagens), esperar)
             if resposta is None:
                 raise OutputParserException("o modelo não devolveu nenhum conteúdo")
-            return ConteudoGerado(**resposta.model_dump())
+            conteudo = ConteudoGerado(**resposta.model_dump())
+            if len(conteudo.conteudo) > CARACTERES_SEM_QUEBRA and "\n" not in conteudo.conteudo:
+                if tentativa < TENTATIVAS_EXTRAS:
+                    raise OutputParserException(
+                        "o conteúdo veio em uma linha só; separe parágrafos, títulos e itens de lista com quebras de linha"
+                    )
+                # Na última tentativa, fica com o texto assim mesmo: a curadoria pode ajustar a formatação.
+                logger.warning("%s gerado sem quebras de linha depois de todas as tentativas.", tipo.value)
+            return conteudo
         except Exception as erro:
             if erro_temporario(erro):
                 raise FalhaNaGeracao(f"Gemini indisponível ao gerar {tipo.value}: {erro}") from erro
@@ -133,7 +151,7 @@ def gerar_ativos(
     textos = {r["interaction_id"]: r["text"] for r in registros}
 
     positivas = _mais_relevantes(mensagens, ROTAS_POSITIVAS, max(MAX_POSTS_LINKEDIN, MAX_DESTAQUES_NEWSLETTER))
-    duvidas = _mais_relevantes(mensagens, {Rota.FAQ}, MAX_MENSAGENS_FAQ)
+    duvidas = _duvidas_primeiro(mensagens, MAX_MENSAGENS_FAQ)
 
     tarefas = [
         lambda m=m, n=n: gerar_post_linkedin(m, textos[m.interaction_id], gerador, n, esperar)

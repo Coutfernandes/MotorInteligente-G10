@@ -66,6 +66,29 @@ def test_posts_saem_dos_mais_relevantes_e_respeitam_o_limite():
     assert [p.fontes[0] for p in posts] == ["INT-90", "INT-80", "INT-70"]
 
 
+def test_faq_prefere_duvidas_a_debates():
+    # O debate é o mais relevante, mas as dúvidas reais ocupam as vagas primeiro (RN02).
+    debate = mensagem("DEB", Rota.FAQ, relevancia=95, tipo="debate")
+    duvidas = [
+        mensagem(f"DUV-{n}", Rota.FAQ, relevancia=50 + n, tipo="pergunta_tecnica")
+        for n in range(geradores.MAX_MENSAGENS_FAQ)
+    ]
+    mensagens = [debate, *duvidas]
+    ativos = geradores.gerar_ativos(mensagens, registros_de(mensagens), RESUMO, GeradorFalso())
+
+    assert "DEB" not in ativos[0].fontes
+    assert len(ativos[0].fontes) == geradores.MAX_MENSAGENS_FAQ
+
+
+def test_faq_completa_com_debates_quando_sobra_vaga():
+    mensagens = [
+        mensagem("DEB", Rota.FAQ, relevancia=95, tipo="debate"),
+        mensagem("DUV", Rota.FAQ, relevancia=60, tipo="pedido_ajuda"),
+    ]
+    ativos = geradores.gerar_ativos(mensagens, registros_de(mensagens), RESUMO, GeradorFalso())
+    assert ativos[0].fontes == ["DUV", "DEB"]
+
+
 def test_texto_original_vai_no_pedido_e_tom_no_prompt():
     mensagens = [mensagem("INT-1", Rota.CASE)]
     falso = GeradorFalso()
@@ -98,6 +121,47 @@ def test_tenta_de_novo_e_pula_ativo_que_falha_sempre():
     assert "resposta anterior foi inválida" in falso.chamadas[1][-1].content
 
 
+TEXTO_EM_UMA_LINHA = "palavra " * 60
+TEXTO_COM_QUEBRAS = "Primeiro parágrafo.\n\nSegundo parágrafo."
+
+
+def test_pede_de_novo_quando_o_texto_vem_em_uma_linha_so():
+    mensagens = [mensagem("INT-1", Rota.FAQ, tipo="pergunta_tecnica")]
+    falso = GeradorFalso([
+        ConteudoGerado(titulo="FAQ", conteudo=TEXTO_EM_UMA_LINHA),
+        ConteudoGerado(titulo="FAQ", conteudo=TEXTO_COM_QUEBRAS),
+    ])
+
+    ativos = geradores.gerar_ativos(mensagens, registros_de(mensagens), RESUMO, falso)
+
+    assert ativos[0].conteudo == TEXTO_COM_QUEBRAS
+    assert "uma linha só" in falso.chamadas[1][-1].content
+
+
+def test_mantem_o_texto_em_uma_linha_se_todas_as_tentativas_falharem():
+    # Melhor um ativo mal formatado na curadoria do que perder o ativo (RN05).
+    mensagens = [mensagem("INT-1", Rota.FAQ, tipo="pergunta_tecnica")]
+    falso = GeradorFalso([ConteudoGerado(titulo="FAQ", conteudo=TEXTO_EM_UMA_LINHA)] * (1 + geradores.TENTATIVAS_EXTRAS))
+
+    ativos = geradores.gerar_ativos(mensagens, registros_de(mensagens), RESUMO, falso)
+
+    assert ativos[0].conteudo == TEXTO_EM_UMA_LINHA
+    assert len(falso.chamadas) == 1 + geradores.TENTATIVAS_EXTRAS
+
+
+def test_texto_curto_em_uma_linha_e_aceito():
+    mensagens = [mensagem("INT-1", Rota.FAQ, tipo="pergunta_tecnica")]
+    falso = GeradorFalso([ConteudoGerado(titulo="FAQ", conteudo="Resposta curta.")])
+    geradores.gerar_ativos(mensagens, registros_de(mensagens), RESUMO, falso)
+    assert len(falso.chamadas) == 1
+
+
 @pytest.mark.parametrize("tipo", list(TipoAtivo))
 def test_todo_prompt_tem_as_regras_comuns(tipo):
     assert "Não invente" in geradores.carregar_prompt(tipo)
+
+
+@pytest.mark.parametrize("tipo", list(TipoAtivo))
+def test_todo_prompt_tem_exemplos_de_estilo(tipo):
+    # Seção 8 das diretrizes: 2 ou 3 exemplos (few-shot) por prompt de geração.
+    assert 2 <= geradores.carregar_prompt(tipo).count("### Exemplo ") <= 3
