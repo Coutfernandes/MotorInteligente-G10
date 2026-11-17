@@ -48,3 +48,12 @@ def test_sem_cors_origins_nao_libera_nada(monkeypatch):
     modulo = importlib.reload(main)
     resposta = TestClient(modulo.app).get("/api/status", headers={"Origin": VERCEL})
     assert "access-control-allow-origin" not in resposta.headers
+
+
+def test_preflight_do_delete_de_pacote(cliente_com_cors):
+    resposta = cliente_com_cors.options(
+        "/api/pacotes/x",
+        headers={"Origin": VERCEL, "Access-Control-Request-Method": "DELETE"},
+    )
+    assert resposta.status_code == 200
+    assert "DELETE" in resposta.headers.get("access-control-allow-methods", "")

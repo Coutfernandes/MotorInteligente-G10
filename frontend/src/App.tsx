@@ -40,6 +40,7 @@ export interface PropsVisao {
   status: StatusSistema | null
   selecionar: (id: string) => void
   aoAlterar: (p: Pacote) => void
+  aoExcluir: (id: string) => Promise<void>
   irPara: (v: Visao) => void
 }
 
@@ -78,6 +79,15 @@ export default function App() {
     [recarregarLista],
   )
 
+  // Depois de excluir, mostra o pacote mais recente que sobrou (ou a tela vazia).
+  const aoExcluir = useCallback(
+    async (id: string) => {
+      const lista = await recarregarLista()
+      setIdPacote((atual) => (atual === id ? (lista[0]?.id ?? null) : atual))
+    },
+    [recarregarLista],
+  )
+
   const aoConcluirProcessamento = useCallback(
     async (id: string) => {
       await recarregarLista()
@@ -88,7 +98,7 @@ export default function App() {
   )
 
   const pendentes = pacote?.ativos.filter((a) => a.status === 'pendente').length ?? 0
-  const props: PropsVisao = { pacote, pacotes, status, selecionar: setIdPacote, aoAlterar, irPara: setVisao }
+  const props: PropsVisao = { pacote, pacotes, status, selecionar: setIdPacote, aoAlterar, aoExcluir, irPara: setVisao }
 
   return (
     <div className="layout">

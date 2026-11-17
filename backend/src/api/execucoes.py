@@ -27,6 +27,10 @@ class Execucao(BaseModel):
     iniciado_em: datetime
 
 
+class PacoteEmProcessamento(Exception):
+    """O pacote ainda está sendo gerado e não pode ser excluído."""
+
+
 class Gerenciador:
     def __init__(self, repositorio: Repositorio | None = None, executar=executar_pipeline):
         self.repositorio = repositorio or Repositorio()
@@ -78,3 +82,12 @@ class Gerenciador:
 
     def pacotes(self) -> list[Pacote]:
         return [Pacote(**self.repositorio.ler(c)) for c in self.repositorio.listar("pacotes")]
+
+    def excluir(self, pacote: Pacote) -> dict:
+        """Apaga o pacote inteiro: cópias locais e objetos no bucket (pacotes/ e aprovados/)."""
+        execucao = self.execucoes.get(pacote.id)
+        if execucao and execucao.status == "processando":
+            raise PacoteEmProcessamento(pacote.id)
+        resultado = self.repositorio.apagar([pacote.caminho_gerado, pacote.caminho_aprovado])
+        self.execucoes.pop(pacote.id, None)
+        return resultado
