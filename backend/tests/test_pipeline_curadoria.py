@@ -18,6 +18,7 @@ class OCIFalso:
     def __init__(self, configurado=True):
         self._configurado = configurado
         self.envios = []
+        self.remocoes = []
         self.bucket_name = "bucket-teste"
 
     def configurado(self):
@@ -25,6 +26,10 @@ class OCIFalso:
 
     def upload_json(self, caminho, payload):
         self.envios.append((caminho, payload))
+        return {"status": "sucesso", "caminho_objeto": caminho}
+
+    def delete_json(self, caminho):
+        self.remocoes.append(caminho)
         return {"status": "sucesso", "caminho_objeto": caminho}
 
 

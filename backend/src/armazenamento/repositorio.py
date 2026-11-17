@@ -36,6 +36,30 @@ class Repositorio:
 
         return {"local": {"status": "sucesso", "caminho": str(arquivo)}, "oci": resultado_oci}
 
+    def apagar(self, caminhos: list[str]) -> dict:
+        """Apaga os arquivos locais e, se a OCI estiver configurada, os objetos do bucket."""
+        apagados_local = []
+        for caminho in caminhos:
+            arquivo = self.pasta / caminho
+            if arquivo.is_file():
+                arquivo.unlink()
+                apagados_local.append(caminho)
+
+        if not self.oci.configurado():
+            resultado_oci = {"status": "nao_configurado", "mensagem": "Credenciais da OCI não preenchidas no .env."}
+        else:
+            resultados = [self.oci.delete_json(c) for c in caminhos]
+            falhas = [r for r in resultados if r["status"] != "sucesso"]
+            resultado_oci = (
+                {"status": "erro", "mensagem": "; ".join(f"{r['caminho_objeto']}: {r['mensagem']}" for r in falhas)}
+                if falhas
+                else {"status": "sucesso", "objetos": caminhos}
+            )
+            if falhas:
+                logger.error("Falha ao apagar no bucket: %s", resultado_oci["mensagem"])
+
+        return {"local": {"status": "sucesso", "apagados": apagados_local}, "oci": resultado_oci}
+
     def ler(self, caminho: str) -> dict | None:
         arquivo = self.pasta / caminho
         if not arquivo.is_file():

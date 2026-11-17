@@ -144,6 +144,11 @@ export const api = {
       `/api/pacotes/${id}/exportar`,
       { method: 'POST' },
     ),
+  excluirPacote: (id: string) =>
+    chamar<{ id: string; armazenamento: { local: { apagados: string[] }; oci: { status: string; mensagem?: string } } }>(
+      `/api/pacotes/${id}`,
+      { method: 'DELETE' },
+    ),
   urlDownload: (id: string, formato: 'json' | 'markdown') => `${BASE_API}/api/pacotes/${id}/download?formato=${formato}`,
 }
 

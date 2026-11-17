@@ -63,3 +63,15 @@ class OCIStorageClient:
             }
         except Exception as e:
             return {"status": "erro", "mensagem": str(e)}
+
+
+    def delete_json(self, object_name: str) -> dict:
+        """Apaga um objeto do bucket. Objeto que já não existe conta como apagado."""
+        try:
+            client = self._get_client()
+            client.delete_object(namespace_name=self.namespace, bucket_name=self.bucket_name, object_name=object_name)
+            return {"status": "sucesso", "caminho_objeto": object_name}
+        except Exception as e:
+            if getattr(e, "status", None) == 404:
+                return {"status": "sucesso", "caminho_objeto": object_name, "mensagem": "já não existia no bucket"}
+            return {"status": "erro", "caminho_objeto": object_name, "mensagem": str(e)}
