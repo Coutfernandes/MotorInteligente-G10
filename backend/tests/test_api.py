@@ -106,3 +106,42 @@ def test_arquivo_de_exemplo_e_valido(cliente):
 
 def test_pacote_inexistente(cliente):
     assert cliente.get("/api/pacotes/nao-existe").status_code == 404
+
+
+# ---- excluir pacote ----
+
+def test_excluir_pacote_apaga_local_e_bucket(cliente, id_pacote):
+    primeiro = cliente.get(f"/api/pacotes/{id_pacote}").json()["ativos"][0]["id"]
+    cliente.patch(f"/api/pacotes/{id_pacote}/ativos/{primeiro}", json={"status": "aprovado"})
+    cliente.post(f"/api/pacotes/{id_pacote}/exportar")
+
+    resposta = cliente.delete(f"/api/pacotes/{id_pacote}")
+
+    assert resposta.status_code == 200
+    armazenamento = resposta.json()["armazenamento"]
+    assert set(armazenamento["local"]["apagados"]) == {f"pacotes/{id_pacote}.json", f"aprovados/{id_pacote}.json"}
+    assert armazenamento["oci"]["status"] == "sucesso"
+    assert set(main.gerenciador.repositorio.oci.remocoes) == {f"pacotes/{id_pacote}.json", f"aprovados/{id_pacote}.json"}
+    assert cliente.get(f"/api/pacotes/{id_pacote}").status_code == 404
+    assert all(p["id"] != id_pacote for p in cliente.get("/api/pacotes").json())
+
+
+def test_excluir_pacote_nao_exportado(cliente, id_pacote):
+    resposta = cliente.delete(f"/api/pacotes/{id_pacote}").json()
+    assert resposta["armazenamento"]["local"]["apagados"] == [f"pacotes/{id_pacote}.json"]
+
+
+def test_excluir_pacote_inexistente(cliente):
+    assert cliente.delete("/api/pacotes/pkg_20260101_000000_abcdef").status_code == 404
+
+
+@pytest.mark.parametrize("id_invalido", ["nao-existe", "pkg_..", "pkg_20260101_000000_abcdef.json"])
+def test_id_fora_do_formato_e_recusado_antes_de_virar_caminho(cliente, id_invalido):
+    assert cliente.delete(f"/api/pacotes/{id_invalido}").status_code == 404
+    assert cliente.get(f"/api/pacotes/{id_invalido}").status_code == 404
+
+
+def test_nao_exclui_pacote_em_processamento(cliente, id_pacote):
+    main.gerenciador.execucoes[id_pacote].status = "processando"
+    assert cliente.delete(f"/api/pacotes/{id_pacote}").status_code == 409
+    assert cliente.get(f"/api/pacotes/{id_pacote}").status_code == 200

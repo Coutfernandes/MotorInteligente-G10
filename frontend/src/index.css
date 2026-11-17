@@ -375,7 +375,12 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--verde-600);
 .lista li > button[aria-current='true'] { border-color: var(--verde-600); background: var(--verde-50); }
 .lista strong { display: block; font-size: 13px; font-weight: 600; }
 .lista small { display: block; font-size: 11px; color: var(--slate-500); }
-.lista .data { font-family: Consolas, monospace; font-size: 11px; color: var(--slate-500); white-space: nowrap; }
+.lista .data { font-family: Consolas, monospace; font-size: 11px; color: var(--slate-500); white-space: nowrap; flex-shrink: 0; }
+
+.cartao.excluir { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; border-color: #f3c4c0; }
+.cartao.excluir .apoio { margin-top: 2px; max-width: 640px; }
+.lista li > button > span:first-child, .lista li > div > span:first-child { min-width: 0; }
+.lista strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .vazio { text-align: center; color: var(--slate-500); padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .vazio h3 { color: var(--slate-900); }

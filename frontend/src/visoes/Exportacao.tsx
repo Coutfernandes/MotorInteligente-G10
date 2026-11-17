@@ -19,9 +19,11 @@ function Destinos({ armazenamento }: { armazenamento: Armazenamento }) {
   )
 }
 
-export default function Exportacao({ pacote, pacotes, status, selecionar, aoAlterar, irPara }: PropsVisao) {
+export default function Exportacao({ pacote, pacotes, status, selecionar, aoAlterar, aoExcluir, irPara }: PropsVisao) {
   const [exportando, setExportando] = useState(false)
+  const [excluindo, setExcluindo] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const [avisoExclusao, setAvisoExclusao] = useState<string | null>(null)
 
   const titulo = (
     <TituloVisao
@@ -63,9 +65,43 @@ export default function Exportacao({ pacote, pacotes, status, selecionar, aoAlte
     }
   }
 
+  async function excluir() {
+    if (!pacote) return
+    const noBucket = status?.oci.configurado ? ' e do bucket da OCI' : ''
+    const confirmado = window.confirm(
+      `Excluir o pacote "${pacote.arquivo_origem}" (${formatarData(pacote.criado_em)})?
+
+` +
+        `Todos os conteúdos gerados, aprovados ou não, serão apagados deste computador${noBucket}. Não dá para desfazer.`,
+    )
+    if (!confirmado) return
+    setExcluindo(true)
+    setErro(null)
+    try {
+      const resultado = await api.excluirPacote(pacote.id)
+      const oci = resultado.armazenamento.oci
+      setAvisoExclusao(
+        oci.status === 'erro'
+          ? `Pacote apagado deste computador, mas houve falha no bucket: ${oci.mensagem}`
+          : `Pacote "${pacote.arquivo_origem}" excluído.`,
+      )
+      await aoExcluir(pacote.id)
+    } catch (e) {
+      setErro((e as Error).message)
+    } finally {
+      setExcluindo(false)
+    }
+  }
+
   return (
     <>
       {titulo}
+
+      {avisoExclusao && (
+        <div className="sucesso" role="status">
+          {avisoExclusao}
+        </div>
+      )}
 
       <div className="grade principal">
         <section className="cartao" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -163,6 +199,19 @@ export default function Exportacao({ pacote, pacotes, status, selecionar, aoAlte
           )}
         </section>
       </div>
+
+      <section className="cartao excluir">
+        <div>
+          <h3>Excluir este pacote</h3>
+          <p className="apoio">
+            Apaga o processamento inteiro, com todos os conteúdos (aprovados ou não), deste computador
+            {status?.oci.configurado ? ' e do bucket (pastas pacotes/ e aprovados/)' : ''}. Não dá para desfazer.
+          </p>
+        </div>
+        <button className="botao perigo" onClick={excluir} disabled={excluindo}>
+          {excluindo ? 'Excluindo…' : 'Excluir pacote'}
+        </button>
+      </section>
     </>
   )
 }

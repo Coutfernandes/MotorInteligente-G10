@@ -5,6 +5,7 @@ Rodar (na pasta backend/): uvicorn src.api.main:app --reload
 
 import json
 import os
+import re
 from collections import Counter
 from pathlib import Path
 
@@ -15,7 +16,7 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ValidationError
 
-from src.api.execucoes import Execucao, Gerenciador
+from src.api.execucoes import Execucao, Gerenciador, PacoteEmProcessamento
 from src.caminhos import PASTA_DADOS, PASTA_FRONTEND_BUILD
 from src.ia.llm import modo_simulado
 from src.ia.geracao.schemas import Ativo, StatusCuradoria
@@ -26,6 +27,8 @@ from src.orquestracao.schemas import Pacote
 load_dotenv()
 
 TAMANHO_MAXIMO_ARQUIVO = 5 * 1024 * 1024  # 5 MB
+# Formato dos IDs criados pelo pipeline. Qualquer outro valor é recusado antes de virar caminho de arquivo.
+FORMATO_ID_PACOTE = re.compile(r"pkg_\d{8}_\d{6}_[0-9a-f]{6}")
 AMOSTRA_NA_VALIDACAO = 10
 PASTA_FRONTEND = PASTA_FRONTEND_BUILD
 # Arquivo do botão "Usar dados de exemplo": 8 interações, rápido de processar com o Gemini real.
@@ -39,7 +42,7 @@ if ORIGENS_PERMITIDAS:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=ORIGENS_PERMITIDAS,
-        allow_methods=["GET", "POST", "PATCH"],
+        allow_methods=["GET", "POST", "PATCH", "DELETE"],
         allow_headers=["Content-Type"],
     )
 gerenciador = Gerenciador()
@@ -77,6 +80,8 @@ async def _ler_upload(arquivo: UploadFile):
 
 
 def _pacote_ou_404(id_pacote: str) -> Pacote:
+    if not FORMATO_ID_PACOTE.fullmatch(id_pacote):
+        raise HTTPException(404, "Pacote não encontrado.")
     pacote = gerenciador.pacote(id_pacote)
     if pacote is None:
         raise HTTPException(404, "Pacote não encontrado.")
@@ -164,6 +169,18 @@ def listar_pacotes():
 @app.get("/api/pacotes/{id_pacote}", response_model=Pacote)
 def obter_pacote(id_pacote: str):
     return _pacote_ou_404(id_pacote)
+
+
+@app.delete("/api/pacotes/{id_pacote}")
+def excluir_pacote(id_pacote: str):
+    """Apaga o pacote inteiro: cópia local e arquivos no bucket (pacotes/ e aprovados/)."""
+    with gerenciador.trava:
+        pacote = _pacote_ou_404(id_pacote)
+        try:
+            resultado = gerenciador.excluir(pacote)
+        except PacoteEmProcessamento as erro:
+            raise HTTPException(409, "O pacote ainda está sendo processado. Espere terminar para excluir.") from erro
+    return {"id": id_pacote, "armazenamento": resultado}
 
 
 @app.patch("/api/pacotes/{id_pacote}/ativos/{id_ativo}", response_model=Ativo)
