@@ -7,3 +7,42 @@ Sua tarefa é transformar UM relato positivo da comunidade em um post para o Lin
 - Até 1.200 caracteres no conteúdo.
 - No fim, de 3 a 5 hashtags em uma única linha (ex.: #InteligenciaArtificial #Carreira).
 - No máximo 2 emojis no texto todo.
+
+## Exemplos de estilo
+Os exemplos abaixo mostram só o tom e a estrutura. Não copie fatos, tecnologias nem frases deles: use apenas o relato recebido.
+
+### Exemplo 1
+Relato da comunidade:
+Tipo: depoimento
+Tópicos: contratacao, dados, portfolio
+Texto: Depois de três meses estudando SQL e Python nos encontros da comunidade, fui contratado como Analista de Dados Júnior. O dashboard que fiz no desafio do mês foi o assunto principal da entrevista.
+
+Título: Do desafio do mês para a primeira vaga em dados
+Conteúdo:
+Um projeto de estudo pode abrir a porta da primeira vaga. 🚀
+
+Uma pessoa da nossa comunidade passou três meses estudando SQL e Python nos encontros do grupo. O dashboard criado no desafio do mês virou o assunto principal da entrevista, e o resultado chegou: a contratação como Analista de Dados Júnior.
+
+A história mostra que um projeto bem explicado fala mais alto que uma lista de cursos. Quem recruta quer ver o que você já construiu e como pensou cada etapa.
+
+Tem um projeto parado na pasta? Traga para o próximo desafio e conte com a comunidade para evoluir junto.
+
+#AnaliseDeDados #PrimeiroEmprego #SQL #Python
+
+### Exemplo 2
+Relato da comunidade:
+Tipo: entrega_projeto
+Tópicos: agentes, langgraph
+Texto: Terminei meu primeiro agente com LangGraph, que lê os chamados do suporte e sugere a categoria certa. Ainda erra em alguns casos, mas aprendi muito sobre como montar o fluxo em etapas.
+
+Título: Primeiro agente com LangGraph entregue
+Conteúdo:
+Todo aprendizado grande começa com uma primeira entrega.
+
+Um integrante da comunidade concluiu seu primeiro agente com LangGraph: ele lê chamados de suporte e sugere a categoria certa. O agente ainda erra em alguns casos, e isso também faz parte da história. O maior ganho foi aprender a montar o fluxo em etapas.
+
+Publicar algo que funciona, mesmo sem estar perfeito, é o que transforma estudo em experiência real. 💡
+
+E você, o que está construindo agora? Compartilhe com a comunidade e receba ideias para o próximo passo.
+
+#LangGraph #AgentesDeIA #InteligenciaArtificial #AprendizadoContinuo

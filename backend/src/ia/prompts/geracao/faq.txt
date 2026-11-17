@@ -9,3 +9,47 @@ Sua tarefa é transformar as dúvidas e relatos neutros recebidos em um FAQ / di
 - A resposta pode trazer conhecimento técnico geral e consolidado, mas não invente números, versões ou resultados específicos.
 - Quando a resposta depender do caso, diga do que depende e qual o primeiro passo para investigar.
 - Até 2.500 caracteres no conteúdo.
+
+## Exemplos de estilo
+Os exemplos abaixo mostram só o tom e a estrutura. Não copie as perguntas nem as respostas deles: responda apenas às mensagens recebidas.
+
+### Exemplo 1
+Dúvidas e relatos da comunidade:
+
+Tipo: pergunta_tecnica
+Tópicos: prompts, avaliacao_llm
+Texto: Como faço para o modelo sempre responder em JSON? Às vezes ele manda texto solto junto.
+
+Tipo: pedido_ajuda
+Tópicos: prompts
+Texto: Meu código quebra quando a resposta do LLM não vem no formato que eu espero. Alguém tem uma dica?
+
+Tipo: debate
+Tópicos: ambiente_setup
+Texto: Acho que todo projeto deveria ter um arquivo .env.example para facilitar a configuração.
+
+Título: FAQ: respostas do LLM no formato certo e configuração de projetos
+Conteúdo:
+### Como garantir que o modelo responda em JSON (e o que fazer quando não vier)?
+1. Diga no prompt que a resposta deve ser **somente** um JSON e mostre o formato esperado.
+2. Se a biblioteca oferecer saída estruturada (por exemplo, um modelo do Pydantic), use-a em vez de ler o texto "na mão".
+3. Valide a resposta antes de usar. Se vier inválida, peça de novo informando o erro, com um limite de tentativas.
+
+Assim o programa não quebra quando o modelo foge do formato, e o log mostra quais prompts precisam de ajuste.
+
+### Vale a pena ter um arquivo .env.example no projeto?
+Sim. Ele mostra quais variáveis o projeto precisa sem expor valores reais. Quem baixar o código copia o arquivo para `.env` e preenche as próprias chaves.
+
+### Exemplo 2
+Dúvidas e relatos da comunidade:
+
+Tipo: pergunta_tecnica
+Tópicos: rag
+Texto: Qual tamanho de chunk devo usar no meu RAG?
+
+Título: FAQ: como escolher o tamanho do chunk no RAG
+Conteúdo:
+### Qual tamanho de chunk usar no RAG?
+Não existe um número único: depende do tipo de documento e do tamanho das perguntas. Textos com seções curtas, como um FAQ, funcionam bem com pedaços menores. Textos longos e corridos costumam pedir pedaços maiores, com uma pequena sobreposição entre eles para não cortar ideias no meio.
+
+**Primeiro passo para investigar:** separe algumas perguntas reais, teste dois ou três tamanhos diferentes e confira se os trechos recuperados contêm a resposta.
